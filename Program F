@@ -1,0 +1,64 @@
+#include<fstream>
+void MergeSort(long long *a, int first, int last, long long& count);
+void Merge(long long *A, int first, int last, long long& count);
+long long return_inversions(long long *a, int n);
+
+int main(){
+    std::ifstream fin("inverse.in");
+    int n;
+    fin >> n;
+    long long *arr = new long long [n];
+    for (int i = 0; i < n; ++i) {
+        fin >> arr[i];
+    }
+    fin.close();
+    long long answer = return_inversions(arr, n);
+    delete[] arr;
+    std::ofstream fout;
+    fout.open("inverse.out");
+    fout << answer << std::endl;
+    fout.close();
+    return 0;
+}
+
+long long return_inversions(long long *a, int n){
+    long long count = 0;
+    MergeSort(a, 0, n - 1, count);
+    return count;
+}
+
+void Merge(long long *A, int first, int last, long long& count)
+{
+    int middle, start, final, j;
+    long long *mas=new long long[last - first + 1];
+    middle=(first+last)/2; //вычисление среднего элемента
+    start=first; //начало левой части
+    final=middle+1; //начало правой части
+    for(j=first; j<=last; j++) //выполнять от начала до конца
+        if ((start<=middle) && ((final>last) || (A[start]<A[final])))
+        {
+            mas[j - first]=A[start];
+            start++;
+        }
+        else
+        {
+            count += middle - start + 1;
+            mas[j - first]=A[final];
+            final++;
+        }
+//возвращение результата в список
+    for (j=first; j<=last; j++) A[j]=mas[j - first];
+    delete[]mas;
+};
+//рекурсивная процедура сортировки
+void MergeSort(long long *A, int first, int last, long long& count)
+{
+    {
+        if (first<last)
+        {
+            MergeSort(A, first, (first+last)/2, count); //сортировка левой части
+            MergeSort(A, (first+last)/2+1, last, count); //сортировка правой части
+            Merge(A, first, last, count); //слияние двух частей
+        }
+    }
+};
