@@ -1,0 +1,121 @@
+#include <iostream>
+#include <assert.h>
+#include <string>
+
+class Stack{
+public:
+    Stack();
+    ~Stack();
+
+    void push(int el);
+    int pop();
+    int back();
+    int getSize();
+    void clear();
+    bool IsEmpty() const;
+
+private:
+    struct Node{
+        int Data;
+        Node* Next;
+
+        Node(int data): Data(data), Next(nullptr){}
+    };
+    Node* head;
+    int size;
+};
+
+Stack::Stack():
+head( nullptr ), size(0){}
+
+void Stack::clear() {
+    while (head != nullptr){
+        Node* nodeToDelete = head;
+        head = head->Next;
+        delete nodeToDelete;
+    }
+    size = 0;
+}
+
+Stack::~Stack()
+{
+    clear();
+}
+
+void Stack::push(int el) {
+    Node* newNode = new Node(el);
+    if (head != nullptr) {
+        newNode->Next = head;
+    }
+    head = newNode;
+    ++size;
+}
+
+int Stack::pop() {
+    assert(size != 0);
+    int result = head->Data;
+    Node* nodeToDelete = head;
+    head = head->Next;
+    delete nodeToDelete;
+    --size;
+    return result;
+}
+
+int Stack::back() {
+    return head->Data;
+}
+
+int Stack::getSize() {
+    return size;
+}
+
+bool Stack::IsEmpty() const {
+    return size == 0;
+}
+//push 𝑛: добавить число 𝑛 в конец стека и вывести «ok»;
+//pop: удалить из стека последний элемент и вывести его значение, либо вывести «error», если стек был пуст;
+//back: сообщить значение последнего элемента стека, либо вывести «error», если стек пуст;
+//getSize: вывести количество элементов в стеке;
+//clear: опустошить стек и вывести «ok»;
+//exit: вывести «bye» и завершить работу.
+
+int main() {
+    Stack st;
+    std::string data;
+    while (data != "exit") {
+        std::cin >> data;
+        if (data == "push") {
+            int x;
+            std::cin >> x;
+            st.push(x);
+            std::cout << "ok" << std::endl;
+        }
+        else if (data == "pop") {
+            if (st.IsEmpty()) {
+                std::cout << "error" << std::endl;
+            }
+            else {
+                std::cout << st.pop() << std::endl;
+            }
+        }
+        else if (data == "back") {
+            if (st.IsEmpty()) {
+                std::cout << "error" << std::endl;
+            }
+            else {
+                std::cout << st.back() << std::endl;
+            }
+        }
+        else if (data == "size") {
+            std::cout << st.getSize() << std::endl;
+        }
+        else if (data == "clear") {
+            st.clear();
+            std::cout << "ok" << std::endl;
+        }
+        else {
+            break;
+        }
+    }
+    std::cout << "bye" << std::endl;
+}
