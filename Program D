@@ -1,0 +1,103 @@
+#include <stdio.h>
+#include <deque>
+#include <string>
+
+class GoblinsDegue{
+public:
+    GoblinsDegue();
+    ~GoblinsDegue();
+    GoblinsDegue operator() (const GoblinsDegue& h) = delete;
+    GoblinsDegue& operator= (const GoblinsDegue& h) = delete;
+    void NormallAdd(int id);
+    void VipAdd(int id);
+    void exit();
+    int ExitNum();
+    int print();
+private:
+    int iterations;
+    std::deque <int> Goblins_1;
+    std::deque <int> Goblins_2;
+    std::deque <int> final_queue;
+};
+
+GoblinsDegue::GoblinsDegue() :
+    Goblins_1(std::deque<int>()),
+    Goblins_2(std::deque<int>()),
+    final_queue(std::deque<int>()),
+    iterations(0){}
+
+
+GoblinsDegue::~GoblinsDegue() {
+    Goblins_1.clear();
+    Goblins_2.clear();
+    final_queue.clear();
+}
+
+void GoblinsDegue::NormallAdd(int id) {
+    if (Goblins_1.empty()){
+        Goblins_1.push_front(id);
+    }
+    else if (Goblins_1.size() >  Goblins_2.size()){
+        Goblins_2.push_back(id);
+    }
+    else if (Goblins_1.size() <= Goblins_2.size()){
+        Goblins_1.push_back(Goblins_2.front());
+        Goblins_2.pop_front();
+        Goblins_2.push_back(id);
+    }
+}
+
+void GoblinsDegue::VipAdd(int id){
+    if (Goblins_1.empty()){
+        Goblins_1.push_front(id);
+    }
+    else if (Goblins_1.size() >  Goblins_2.size()){
+        Goblins_2.push_front(id);
+    }
+    else if (Goblins_1.size() <= Goblins_2.size()){
+        Goblins_1.push_back(id);
+    }
+}
+
+int GoblinsDegue::ExitNum(){
+    return iterations;
+}
+
+void GoblinsDegue::exit(){
+    final_queue.push_back(Goblins_1.front());
+    Goblins_1.pop_front();
+    if (!(Goblins_2.empty()) && (Goblins_1.size() < Goblins_2.size())) {
+        Goblins_1.push_back(Goblins_2.front());
+        Goblins_2.pop_front();
+    }
+    iterations++;
+}
+
+int GoblinsDegue::print(){
+    int temp = final_queue.front();
+    final_queue.pop_front();
+    return(temp);
+}
+
+int main(){
+    GoblinsDegue G1;
+    char str;
+    int n, id;
+    scanf ("%d", &n);
+    for (int i = 0; i < n; ++i) {
+        scanf(" %c", &str);
+        if (str == '+') {
+            scanf("%d", &id);
+            G1.NormallAdd(id);
+        } else if (str == '-') {
+            G1.exit();
+        } else if (str == '*') {
+            scanf("%d", &id);
+            G1.VipAdd(id);
+        }
+    }
+        for (int i = 0; i < G1.ExitNum(); ++i){
+            printf("%d\n", G1.print());
+        }
+    return (0);
+}
