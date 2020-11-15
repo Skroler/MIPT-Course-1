@@ -1,11 +1,8 @@
-//
-// Created by Яфаров Владимир on 27.10.2020.
-//
-
 #include <iostream>
 #include <string>
 #include <assert.h>
 #include <algorithm>
+#include <vector>
 
 struct Item {
     long long value;
@@ -16,7 +13,7 @@ struct Item {
 
 class Heap {
 public:
-    Heap(int max_size);
+    Heap();
     ~Heap();
     Heap operator() (const Heap& h) = delete;
     Heap& operator= (const Heap& h) = delete;
@@ -25,18 +22,15 @@ public:
     void insert(Item x);
     void extractMin();
 private:
-    Item* data;
+    std::vector<Item> data;
     int n;
-    int max_size;
     void siftUp(int i);
     void siftDown(int i);
 };
 
-Heap::Heap(int _max_size) : data (new Item[_max_size + 1]), n (0), max_size (_max_size) {}
+Heap::Heap() : data (std::vector<Item>(1)), n (0) {}
 
-Heap::~Heap() {
-    delete[] data;
-}
+Heap::~Heap() {}
 
 void Heap::decreaseKey(int i, long long delta) {
     data[i].value -= delta;
@@ -48,9 +42,9 @@ Item Heap::getMin() {
 }
 
 void Heap::insert(Item x) {
-    assert(n != max_size);
     *(x.index) = n + 1;
-    data[++n] = x;
+    data.push_back(x);
+    n++;
     siftUp(n);
 }
 
@@ -58,6 +52,7 @@ void Heap::extractMin() {
     data[1] = data[n];
     *(data[1].index) = 1;
     --n;
+    data.pop_back();
     siftDown(1);
 }
 
@@ -94,11 +89,11 @@ int main() {
     std::ios_base::sync_with_stdio(0);
     std::cin.tie(0);
     std::cout.tie(0);
-    Heap h = Heap(1000001);
+    Heap h = Heap();
     int q;
     std::string cmd;
     std::cin >> q;
-    int* commands = new int[1000001];
+    int *commands = new int[1000001];
     for (int i = 1; i <= q; ++i) {
         std::cin >> cmd;
         if (cmd == "insert") {
