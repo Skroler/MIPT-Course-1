@@ -1,0 +1,231 @@
+#include <iostream>
+#include <string>
+
+struct Node
+{
+    int key;
+    int height;
+    Node* left;
+    Node* right;
+    Node(int k) { key = k; left = right = 0; height = 1; }
+};
+
+class AVL {
+public:
+    AVL();
+    ~AVL();
+
+    void Insert(int);
+    void Delete(int);
+    void Exists(int);
+    void Next(int);
+    void Prev(int);
+
+private:
+    Node* root;
+
+    Node* add(int, Node*);
+    Node* balance(Node*);
+    Node* del(int, Node*);
+    Node* delmin(Node*);
+
+    int findmin(Node*);
+    int delta(Node*);
+    void fixheight(Node*);
+    int height(Node*);
+    Node* rotate_right(Node*);
+    Node* rotate_left(Node*);
+
+    bool exist(int, Node*);
+    int find_next(int, Node*);
+    int find_prev(int, Node*);
+};
+
+AVL::AVL():
+        root(nullptr)
+{
+}
+
+AVL::~AVL() {
+    while (root != nullptr) {
+        Delete(root->key);
+    }
+}
+
+
+void AVL::Insert(int key) {
+    root = add(key, root);
+}
+
+Node* AVL::add(int key, Node* node_1) {
+    if (node_1 == nullptr) return new Node(key);
+    if (key > node_1->key) node_1->right = add(key, node_1->right);
+    else if (key == node_1->key) return (node_1);
+    else node_1->left = add(key, node_1->left);
+    return balance(node_1);
+}
+
+Node* AVL::balance(Node* node) {
+    fixheight(node);
+    if (delta(node) == 2) {
+        if (delta(node->right) < 0) node->right = rotate_right(node->right);
+        return(rotate_left(node));
+    }
+    if (delta(node) == -2) {
+        if (delta(node->left) > 0) node->left = rotate_left(node->left);
+        return(rotate_right(node));
+    }
+    return node;
+}
+
+int AVL::height(Node* node) {
+    return node == nullptr ? 0 : node->height;
+}
+
+void AVL::fixheight(Node* node) {
+    node->height = height(node->right) > height(node->left) ? height(node->right) + 1 : height(node->left) + 1;
+}
+
+int AVL::delta(Node* node) {
+    return height(node->right) - height(node->left);
+}
+
+Node* AVL::rotate_right(Node* node_1) {
+    Node* p = node_1->left;
+    node_1->left = p->right;
+    p->right = node_1;
+    fixheight(node_1);
+    fixheight(p);
+    return(p);
+}
+
+Node* AVL::rotate_left(Node* node_1) {
+    Node* p = node_1->right;
+    node_1->right = p->left;
+    p->left = node_1;
+    fixheight(node_1);
+    fixheight(p);
+    return(p);
+}
+
+void AVL::Delete(int key) {
+    root = del(key, root);
+}
+
+Node* AVL::del(int key, Node* node_1) {
+    if (node_1 == nullptr) return nullptr;
+    if (key > node_1->key) {
+        node_1->right = del(key, node_1->right);
+        return balance(node_1);
+    }
+    else if (key < node_1->key) {
+        node_1->left = del(key, node_1->left);
+        return balance(node_1);
+    }
+    else {
+        if (node_1->right == nullptr) {
+            Node* ans = node_1->left;
+            delete node_1;
+            return ans;
+        }
+        else {
+            int min = findmin(node_1->right);
+            Node* ans = new Node(min);
+            Node* left_1 = node_1->left;
+            Node* right_1 = delmin(node_1->right);
+            ans->left = left_1;
+            ans->right = right_1;
+            delete node_1;
+            return balance(ans);
+        }
+    }
+}
+
+int AVL::findmin(Node* node){
+    if (node->left == nullptr) return node->key;
+    return findmin(node->left);
+}
+
+Node* AVL::delmin(Node* node_1) {
+    if (node_1->left == nullptr) {
+        Node* ans = node_1->right;
+        delete node_1;
+        return ans;
+    }
+    node_1->left = delmin(node_1->left);
+    return balance(node_1);
+}
+
+void AVL::Exists(int key) {
+    if (exist(key, root)) std::cout << "true" << "\n";
+    else std::cout << "false" << "\n";
+}
+
+bool AVL::exist(int key, Node* node) {
+    if (node == nullptr) return 0;
+    if (node->key == key) return 1;
+    if (key > node->key) return exist(key, node->right);
+    return exist(key, node->left);
+}
+
+void AVL::Next(int key) {
+    int a = find_next(key, root);
+    if (a == 2000000000) std::cout << "none" << "\n";
+    else std::cout << a << "\n";
+}
+
+int AVL::find_next(int key, Node* node) {
+    int min = 2000000000;
+    while (node != nullptr) {
+        if (node->key < min && node->key > key) min = node->key;
+        if (node->key > key) node = node->left;
+        else node = node->right;
+    }
+    return min;
+}
+
+void AVL::Prev(int key) {
+    int a = find_prev(key, root);
+    if (a == -2000000000) std::cout << "none" << "\n";
+    else std::cout << a << "\n";
+}
+
+
+int AVL::find_prev(int key, Node* node) {
+    int max = -2000000000;
+    while (node != nullptr) {
+        if (node->key > max && node->key < key) max = node->key;
+        if (node->key < key) node = node->right;
+        else node = node->left;
+    }
+    return max;
+}
+
+void detect_s(std::string s, int x, AVL& tree){
+    if (s == "insert") {
+        tree.Insert(x);
+    }
+    if (s == "delete") {
+        tree.Delete(x);
+    }
+    if (s == "exists") {
+        tree.Exists(x);
+    }
+    if (s == "prev") {
+        tree.Prev(x);
+    }
+    if (s == "next") {
+        tree.Next(x);
+    }
+}
+
+int main() {
+    AVL tree;
+    int x = 0;
+    std::string s = "";
+    while (std::cin >> s) {
+        std::cin >> x;
+        detect_s(s, x, tree);
+    }
+    return 0;
+}
