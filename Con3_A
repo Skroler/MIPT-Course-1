@@ -1,0 +1,211 @@
+#include <iostream>
+
+const int BIG = 2000000000;
+
+class Splay {
+public:
+    Splay();
+    ~Splay();
+    void Add(int);
+    long long int Sum(int, int);
+
+private:
+    struct Node {
+        Node* lbranch;
+        Node* rbranch;
+        int key;
+        long long int sum;
+        Node(int x) :
+            lbranch(nullptr),
+            rbranch(nullptr),
+            key(x),
+            sum(x)
+        {
+        };
+    };
+
+    struct tree_pair {
+        Node* left;
+        Node* right;
+        tree_pair(Node* l, Node* r) :
+            left(l),
+            right(r)
+        {
+        }
+    };
+
+    Node* root;
+
+    void splay(int, Node*&, Node*);
+    void add(int, Node*&);
+    Node* rotate_left(Node*&);
+    Node* rotate_right(Node*&);
+    int getkey(Node*);
+    long long int getsum(Node*);
+    void fixsum(Node*&);
+
+    tree_pair split(int, Node*&);
+    Node* merge(Node*&, Node*&);
+
+    int max(Node*);
+    int find_next(int, Node*);
+};
+
+Splay::Splay():
+    root(nullptr)
+{
+}
+
+Splay::~Splay()
+{
+}
+
+void Splay::Add(int key) {
+    add(key, root);
+    splay(key, root, root);
+}
+
+long long int Splay::Sum(int l, int r) {
+    tree_pair left_br = split(find_next(l, root), root);
+    tree_pair right_br = split(find_next(r + 1 , left_br.right), left_br.right);
+    long long ans = getsum(right_br.left);
+    Node* right = merge(right_br.left, right_br.right);
+    root = merge(left_br.left, right);
+    return ans;
+}
+
+int Splay::max(Node* node) {
+    while (node->rbranch != nullptr) node = node->rbranch;
+    return node->key;
+}
+
+int Splay::find_next(int key, Node* node) {
+    int ans = BIG;
+    while (node != nullptr) {
+        if (node->key >= key && node->key < ans) ans = node->key;
+        if (node->key == key) break;
+        if (node->key > key) node = node->lbranch;
+        else node = node->rbranch;
+    }
+    return ans;
+}
+
+Splay::Node* Splay::merge(Node*& left, Node*& right) {
+    if (left == nullptr) return right;
+    if (right == nullptr) return left;
+    splay(max(left), left, left);
+    left->rbranch = right;
+    fixsum(left);
+    return left;
+}
+
+Splay::tree_pair Splay::split(int key, Node*& node) {
+    if (key == BIG) return tree_pair(node, nullptr);
+    if (key == -1) return tree_pair(nullptr, node);
+    if (node == nullptr) return tree_pair(nullptr, nullptr);
+    splay(key, node, node);
+    Node* left = node->lbranch;
+    node->lbranch = nullptr;
+    fixsum(node);
+    return tree_pair(left, node);
+}
+
+void Splay::add(int key, Node*& node) {
+    if (node == nullptr) node = new Node(key);
+    if (node->key == key)return;
+    if (node->key < key) add(key, node->rbranch);
+    if (node->key > key) add(key, node->lbranch);
+    fixsum(node);
+}
+
+void Splay::fixsum(Node*& node) {
+    if (node == nullptr) return;
+    node->sum = getsum(node->rbranch) + getsum(node->lbranch) + node->key;
+}
+
+void Splay::splay(int key, Node*& node, Node* temproot) {
+    if (node == nullptr) return;
+    if (node->key == key) return;
+    if (node->key < key) splay(key, node->rbranch, temproot);
+    else splay(key, node->lbranch, temproot);
+    if (node == temproot) {
+        if (node->lbranch != nullptr && getkey(node->lbranch) == key) node = rotate_right(node);
+        if (node->rbranch != nullptr && getkey(node->rbranch) == key) node = rotate_left(node);
+    }
+    if (node->lbranch != nullptr && node->lbranch->lbranch != nullptr && getkey(node->lbranch->lbranch) == key) {
+        node = rotate_right(node);
+        node = rotate_right(node);
+        return;
+    }
+    if (node->lbranch != nullptr && node->lbranch->rbranch != nullptr && getkey(node->lbranch->rbranch) == key) {
+        node->lbranch = rotate_left(node->lbranch);
+        node = rotate_right(node);
+        return;
+    }
+    if (node->rbranch != nullptr && node->rbranch->lbranch != nullptr && getkey(node->rbranch->lbranch) == key) {
+        node->rbranch = rotate_right(node->rbranch);
+        node = rotate_left(node);
+        return;
+    }
+    if (node->rbranch != nullptr && node->rbranch->rbranch != nullptr && getkey(node->rbranch->rbranch) == key) {
+        node = rotate_left(node);
+        node = rotate_left(node);
+        return;
+    }
+}
+
+Splay:: Node* Splay::rotate_left(Node*& node) {
+    Node* ans = node->rbranch;
+    node->rbranch = ans->lbranch;
+    ans->lbranch = node;
+    fixsum(node);
+    fixsum(ans);
+    return(ans);
+}
+
+Splay::Node* Splay::rotate_right(Node*& node) {
+    Node* ans = node->lbranch;
+    node->lbranch = ans->rbranch;
+    ans->rbranch = node;
+    fixsum(node);
+    fixsum(ans);
+    return(ans);
+}
+
+int Splay::getkey(Node* node) {
+    return node == nullptr ? 0 : node->key;
+}
+
+long long int Splay::getsum(Node* node) {
+    return node == nullptr ? 0 : node->sum;
+}
+void detect_ch (char ch, bool* fl, long long* res, Splay* tree){
+    if (ch == '+'){
+        int x;
+        std::cin >> x;
+        if (*fl) tree->Add(x);
+        else tree->Add((x + *res) % 1000000000);
+        *fl = 'True';
+    }
+    if (ch == '?') {
+        int x,y;
+        std::cin >> x >> y;
+        *res = tree->Sum(x, y);
+        std::cout << *res << "\n";
+        *fl = 0;
+    }
+}
+
+int main() {
+    Splay tree;
+    char   ch;
+    int n = 0;
+    long long res = 0;
+    bool fl = 1;
+    std::cin >> n;
+    for (int i = 0; i < n; ++i) {
+        std::cin >> ch;
+        detect_ch(ch, &fl, &res, &tree);
+    }
+    return 0;
+}
