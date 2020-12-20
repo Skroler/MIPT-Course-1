@@ -1,8 +1,7 @@
 #include <iostream>
 #include <string>
 
-struct Node
-{
+struct Node {
     int key;
     int height;
     Node* left;
@@ -22,6 +21,7 @@ public:
     void Prev(int);
 
 private:
+
     Node* root;
 
     Node* add(int, Node*);
@@ -39,19 +39,15 @@ private:
     bool exist(int, Node*);
     int find_next(int, Node*);
     int find_prev(int, Node*);
+    
 };
 
 AVL::AVL():
-        root(nullptr)
-{
-}
+        root(nullptr){}
 
 AVL::~AVL() {
-    while (root != nullptr) {
-        Delete(root->key);
-    }
+    delete root;
 }
-
 
 void AVL::Insert(int key) {
     root = add(key, root);
@@ -131,10 +127,8 @@ Node* AVL::del(int key, Node* node_1) {
         else {
             int min = findmin(node_1->right);
             Node* ans = new Node(min);
-            Node* left_1 = node_1->left;
-            Node* right_1 = delmin(node_1->right);
-            ans->left = left_1;
-            ans->right = right_1;
+            ans->left = node_1->left;
+            ans->right = delmin(node_1->right);
             delete node_1;
             return balance(ans);
         }
@@ -170,33 +164,59 @@ bool AVL::exist(int key, Node* node) {
 
 void AVL::Next(int key) {
     int a = find_next(key, root);
-    if (a == 2000000000) std::cout << "none" << "\n";
+    if (a == key) std::cout << "none" << "\n";
     else std::cout << a << "\n";
 }
 
 int AVL::find_next(int key, Node* node) {
-    int min = 2000000000;
+    int min;
+    int f = 0;
     while (node != nullptr) {
-        if (node->key < min && node->key > key) min = node->key;
-        if (node->key > key) node = node->left;
-        else node = node->right;
+        if (f == 0){
+            if (node->key > key) {
+                min = node->key;
+                f++;
+            }
+            else node = node->right;
+        }
+        else {
+            if (node->key < min && node->key > key) min = node->key;
+            if (node->key > key) node = node->left;
+            else node = node->right;
+        }
+    }
+    if (f == 0){
+        return key;
     }
     return min;
 }
 
 void AVL::Prev(int key) {
     int a = find_prev(key, root);
-    if (a == -2000000000) std::cout << "none" << "\n";
+    if (a == key) std::cout << "none" << "\n";
     else std::cout << a << "\n";
 }
 
 
 int AVL::find_prev(int key, Node* node) {
-    int max = -2000000000;
+    int max;
+    int f = 0;
     while (node != nullptr) {
-        if (node->key > max && node->key < key) max = node->key;
-        if (node->key < key) node = node->right;
-        else node = node->left;
+        if (f == 0){
+            if (node->key < key){
+                max = node->key;
+                f++;
+            }
+            else node = node->left;
+        }
+        else {
+            if (node->key > max && node->key < key) max = node->key;
+            if (node->key < key) node = node->right;
+            else node = node->left;
+        }
+    }
+    if (f == 0){
+        return key;
     }
     return max;
 }
