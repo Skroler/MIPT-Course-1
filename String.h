@@ -91,14 +91,22 @@ public:
         else {
             size_t i = sz - 1;
             while (i != 0){
-                if (str[i] != s.str[0]) {
-                    --i;
-                    continue;
+                if (str[i] == s.str[0] && i + s.sz <= sz) {
+                    int temp = 0;
+                    bool no_difference = true;
+                    for (size_t j = i; j < i + s.sz; ++j) {
+                        if (s.str[temp] == str[j]) temp++;
+                        else {
+                            no_difference = false;
+                            break;
+                        }
+                    }
+                    if (no_difference) return (i);
+                    else --i;
                 }
                 else {
-                    ans = this->substr(i, s.sz);
-                    if (s == ans) return (i);
-                    else --i;
+                    --i;
+                    continue;
                 }
             }
             return (sz);
@@ -117,8 +125,16 @@ public:
                     continue;
                 }
                 else{
-                    ans = this->substr(i, s.sz);
-                    if (s == ans) return (i);
+                    int temp = 0;
+                    bool no_difference = true;
+                    for (size_t j = i; j < i + s.sz; ++j) {
+                        if (s.str[temp] == str[j]) temp++;
+                        else {
+                            no_difference = false;
+                            break;
+                        }
+                    }
+                    if (no_difference) return (i);
                     else ++i;
                 }
             }
@@ -165,11 +181,25 @@ public:
 
     String& operator+=(const String& s){
         std::cerr << "+= id 1\n";
-        for (size_t i = 0; i < s.sz; ++i){
-            *this += s.str[i];
+        if (s.sz > sz){
+            size_t temp = sz;
+            sz = sz + s.sz;
+            max_size = s.max_size;
+            while (s.sz + temp > max_size){
+                max_size *= 2;
+            }
+            for (size_t i = temp; i < s.sz + temp; ++i){
+                str[i] = s.str[i - temp];
+            }
+            return (*this);
         }
-        std::cerr << "+= id 2\n";
-        return (*this);
+        else {
+            for (size_t i = 0; i < s.sz; ++i) {
+                *this += s.str[i];
+            }
+            std::cerr << "+= id 2\n";
+            return (*this);
+        }
     }
 
     char& operator[](size_t index) {
