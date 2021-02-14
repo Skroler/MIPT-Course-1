@@ -381,12 +381,8 @@ BigInteger& BigInteger::operator /=(const BigInteger& a) {
 } //ok
 BigInteger operator %(const BigInteger& left, const BigInteger& right) {
     //std::cerr << "create Big %" << '\n';
-    BigInteger result;
-    BigInteger temp = left;
-    temp /= right;
-    temp *= right;
-    result = left - temp;
-    return result;
+    BigInteger res = left;
+    return res %= right;
 }
 BigInteger& BigInteger::operator %=(const BigInteger& a) {
     //std::cerr << "create Big %=" << '\n';
